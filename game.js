@@ -776,33 +776,20 @@ const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
     }
   });
 
-  // Drawing functions
-  function drawGrid() {
-    // Clear canvas
+  // Drawing functions - optimized to reduce flashing
+  function drawBackground() {
+    // Clear canvas with solid background
     ctx.fillStyle = '#0f1419';
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-    // Draw buildable tiles
-    for (let c = 0; c < COLS; c++) {
-      for (let r = 0; r < ROWS; r++) {
-        if (!state.pathSet.has(`${c},${r}`)) {
-          ctx.fillStyle = '#1a1d23';
-          ctx.fillRect(c * GRID, r * GRID, GRID, GRID);
-          ctx.strokeStyle = '#2a2d33';
-          ctx.strokeRect(c * GRID + 0.5, r * GRID + 0.5, GRID - 1, GRID - 1);
-        }
-      }
-    }
-
-    // Draw path tiles
+    // Draw path tiles first
+    ctx.fillStyle = '#2a5f3b';
     for (const [c, r] of state.pathCells) {
-      ctx.fillStyle = '#2a5f3b';
       ctx.fillRect(c * GRID, r * GRID, GRID, GRID);
-      ctx.strokeStyle = '#1b3d27';
-      ctx.strokeRect(c * GRID + 0.5, r * GRID + 0.5, GRID - 1, GRID - 1);
     }
 
     // Draw path direction arrows
+    ctx.fillStyle = '#4a7c59';
     for (let i = 0; i < state.pathPoints.length - 1; i++) {
       const current = state.pathPoints[i];
       const next = state.pathPoints[i + 1];
@@ -813,34 +800,36 @@ const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
       ctx.save();
       ctx.translate(current.x, current.y);
       ctx.rotate(angle);
-      ctx.fillStyle = '#4a7c59';
       ctx.beginPath();
-      ctx.moveTo(10, 0);
-      ctx.lineTo(-5, -5);
-      ctx.lineTo(-5, 5);
+      ctx.moveTo(8, 0);
+      ctx.lineTo(-4, -4);
+      ctx.lineTo(-4, 4);
       ctx.closePath();
       ctx.fill();
       ctx.restore();
     }
 
-    // Hover indicator
+    // Draw subtle hover indicator only
     if (hoverCell.c >= 0 && hoverCell.r >= 0) {
       const canBuild = !state.pathSet.has(`${hoverCell.c},${hoverCell.r}`) && 
                       !towerAt(hoverCell.c, hoverCell.r);
       
       if (state.sellMode) {
         const tower = towerAt(hoverCell.c, hoverCell.r);
-        ctx.fillStyle = tower ? 'rgba(255,92,122,0.3)' : 'rgba(255,255,255,0.1)';
-      } else {
-        ctx.fillStyle = canBuild ? 'rgba(79,124,255,0.3)' : 'rgba(255,92,122,0.2)';
+        if (tower) {
+          ctx.fillStyle = 'rgba(255,92,122,0.2)';
+          ctx.fillRect(hoverCell.c * GRID, hoverCell.r * GRID, GRID, GRID);
+        }
+      } else if (canBuild) {
+        ctx.fillStyle = 'rgba(79,124,255,0.15)';
+        ctx.fillRect(hoverCell.c * GRID, hoverCell.r * GRID, GRID, GRID);
       }
-      
-      ctx.fillRect(hoverCell.c * GRID, hoverCell.r * GRID, GRID, GRID);
     }
   }
 
   // Game loop
   let last = performance.now();
+  
   function frame(now) {
     const dt = state.running ? Math.min(0.05, (now - last) / 1000) * state.timeScale : 0;
     last = now;
@@ -862,8 +851,10 @@ const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
       }
     }
 
-    // Render
-    drawGrid();
+    // Render - simple and smooth
+    drawBackground();
+    
+    // Draw game entities
     state.enemies.forEach(e => e.draw());
     state.towers.forEach(t => t.draw());
     state.bullets.forEach(b => b.draw());
