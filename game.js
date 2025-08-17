@@ -57,7 +57,7 @@
   const TOWER_DEFS = {
     basic:  { cost: 30, range: 140, fireRate: 0.8, damage: 10, bulletSpeed: 420, color: '#4f7cff' },
     sniper: { cost: 50, range: 260, fireRate: 1.8, damage: 28, bulletSpeed: 700, color: '#ffd166' },
-    slow:   { cost: 50, range: 120, fireRate: 1.1, damage: 6,  bulletSpeed: 360, color: '#8de86e', slow: 0.55, slowSecs: 1.2 },
+    slow:   { cost: 40, range: 120, fireRate: 1.1, damage: 6,  bulletSpeed: 360, color: '#8de86e', slow: 0.55, slowSecs: 1.2 },
   };
 
   function uiSync() {
