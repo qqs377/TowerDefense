@@ -138,7 +138,7 @@ const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
     // Starting resources for each floor
     if (state.floor === 1) {
       state.money = 250;
-      state.lives = 25;
+      state.lives = 5;
       state.score = 0;
     } else {
       // Bonus money for higher floors, but not too much since towers are cleared
