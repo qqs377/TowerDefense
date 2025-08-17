@@ -163,10 +163,14 @@ const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
     
     updateUpgradePanel();
     
-    // Show next floor button if wave is complete
-    const canAdvance = state.wave >= 5 && state.spawnQueue.length === 0 && 
+    // Show next floor button if wave 5 is complete
+    const canAdvance = state.wave === 5 && state.spawnQueue.length === 0 && 
                       state.enemies.length === 0;
     nextFloorBtn.hidden = !canAdvance;
+    
+    // Hide start wave button if already at wave 5 and not ready to advance
+    startBtn.hidden = (state.wave >= 5 && !canAdvance);
+    startBtn.disabled = state.spawnQueue.length > 0 || state.wave >= 5;
   }
 
   function updateUpgradePanel() {
@@ -688,6 +692,8 @@ const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
   startBtn.addEventListener('click', () => {
     if (state.spawnQueue.length > 0) return;
+    // Don't allow starting wave beyond 5 on current floor
+    if (state.wave >= 5) return;
     scheduleWave(state.wave + 1);
   });
 
@@ -925,7 +931,7 @@ const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
   });
 
   // Initialize game
-  gameOverModal.hidden = true;
+  gameOverModal.hidden = true; // Make sure modal is hidden on start
   initializeFloor();
   loadLeaderboard();
   requestAnimationFrame(frame);
