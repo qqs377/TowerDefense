@@ -3,8 +3,9 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Tower Defense</title>
+  <title>Roguelike Tower Defense</title>
   <link rel="stylesheet" href="style.css" />
+  <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
 </head>
 <body>
   <header class="topbar">
@@ -13,62 +14,124 @@
       <div>💰 Money: <span id="money">0</span></div>
       <div>❤️ Lives: <span id="lives">0</span></div>
       <div>🌊 Wave: <span id="wave">0</span></div>
+      <div>🏢 Floor: <span id="floor">1</span></div>
+      <div>⭐ Score: <span id="score">0</span></div>
     </div>
   </header>
-
+  
   <main class="layout">
     <section class="board">
       <canvas id="game" width="900" height="600"></canvas>
       <div id="tooltip" class="tooltip" hidden></div>
+      <div id="gameOverModal" class="modal" hidden>
+        <div class="modal-content">
+          <h2 id="gameOverTitle">Game Over</h2>
+          <p>Final Score: <span id="finalScore">0</span></p>
+          <p>Floor Reached: <span id="finalFloor">1</span></p>
+          <input type="text" id="playerName" placeholder="Enter your name" maxlength="20">
+          <div class="modal-buttons">
+            <button id="submitScore">Submit Score</button>
+            <button id="restartGame">Play Again</button>
+          </div>
+        </div>
+      </div>
     </section>
-
+    
     <aside class="sidebar">
       <div class="panel">
-        <h2>Build</h2>
+        <h2>Build Towers</h2>
         <div class="tower-buttons">
           <button class="tower-btn" data-type="basic">
-            Basic Tower<br><small>Cost: 30</small>
+            <div class="tower-icon basic"></div>
+            <div class="tower-info">
+              <strong>Basic</strong><br>
+              <small>Cost: 30 | Range: 140</small><br>
+              <small>Damage: 10</small>
+            </div>
           </button>
           <button class="tower-btn" data-type="sniper">
-            Sniper Tower<br><small>Cost: 50</small>
+            <div class="tower-icon sniper"></div>
+            <div class="tower-info">
+              <strong>Sniper</strong><br>
+              <small>Cost: 50 | Range: 260</small><br>
+              <small>Damage: 28</small>
+            </div>
           </button>
           <button class="tower-btn" data-type="slow">
-            Frost Tower<br><small>Cost: 40</small>
+            <div class="tower-icon slow"></div>
+            <div class="tower-info">
+              <strong>Frost</strong><br>
+              <small>Cost: 40 | Range: 120</small><br>
+              <small>Slows enemies</small>
+            </div>
+          </button>
+          <button class="tower-btn" data-type="splash">
+            <div class="tower-icon splash"></div>
+            <div class="tower-info">
+              <strong>Splash</strong><br>
+              <small>Cost: 70 | Range: 100</small><br>
+              <small>Area damage</small>
+            </div>
+          </button>
+          <button class="tower-btn" data-type="laser">
+            <div class="tower-icon laser"></div>
+            <div class="tower-info">
+              <strong>Laser</strong><br>
+              <small>Cost: 90 | Range: 180</small><br>
+              <small>Piercing beam</small>
+            </div>
           </button>
         </div>
-        <p class="hint">
-          Tip: Click a free tile (not the path) to place the selected tower.
-        </p>
       </div>
-
+      
+      <div class="panel">
+        <h2>Tower Upgrades</h2>
+        <div id="upgradePanel" class="upgrade-panel" hidden>
+          <h3 id="selectedTowerType">Select a tower</h3>
+          <div class="upgrade-options">
+            <button id="upgradeDamage" class="upgrade-btn">
+              🗡️ Upgrade Damage<br>
+              <small>Cost: <span id="damageCost">0</span></small>
+            </button>
+            <button id="upgradeRange" class="upgrade-btn">
+              🎯 Upgrade Range<br>
+              <small>Cost: <span id="rangeCost">0</span></small>
+            </button>
+            <button id="upgradeSpeed" class="upgrade-btn">
+              ⚡ Upgrade Speed<br>
+              <small>Cost: <span id="speedCost">0</span></small>
+            </button>
+          </div>
+          <div class="tower-stats">
+            <div>Level: <span id="towerLevel">1</span></div>
+            <div>Damage: <span id="towerDamage">0</span></div>
+            <div>Range: <span id="towerRange">0</span></div>
+            <div>Fire Rate: <span id="towerFireRate">0</span></div>
+            <div>Sell Value: <span id="towerSellValue">0</span></div>
+          </div>
+        </div>
+        <p class="hint">Click a tower to upgrade it</p>
+      </div>
+      
       <div class="panel">
         <h2>Controls</h2>
         <div class="controls">
           <button id="startWave">Start Wave</button>
           <button id="pauseResume">Pause</button>
           <button id="sellMode">Sell Mode: Off</button>
+          <button id="nextFloor" hidden>Next Floor</button>
         </div>
       </div>
-
+      
       <div class="panel">
-        <h2>Info</h2>
-        <ul class="legend">
-          <li><span class="dot path"></span> Path</li>
-          <li><span class="dot build"></span> Buildable</li>
-          <li><span class="dot tower"></span> Tower</li>
-        </ul>
-        <p>
-          Enemies follow the path. Stop them from reaching the exit!<br />
-          Earn money by defeating enemies and build more towers.
-        </p>
+        <h2>Leaderboard</h2>
+        <div id="leaderboard" class="leaderboard">
+          <div class="loading">Loading...</div>
+        </div>
       </div>
     </aside>
   </main>
-
-  <footer class="footer">
-    <span>Made for GitHub Pages • No libraries required</span>
-  </footer>
-
+  
   <script src="game.js"></script>
 </body>
 </html>
