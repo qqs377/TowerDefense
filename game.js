@@ -29,7 +29,7 @@ const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
   // Game state
   const state = {
     money: 250,
-    lives: 25,
+    lives: 5,
     wave: 0,
     floor: 1,
     score: 0,
