@@ -125,21 +125,26 @@ const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
       y: r * GRID + GRID/2
     }));
     
-    // Clear entities but keep towers if advancing floors
+    // Clear entities
     state.enemies = [];
     state.bullets = [];
     state.spawnQueue = [];
     state.wave = 0;
     
-    // If starting new game, clear towers too
+    // Clear all towers for new floor
+    state.towers = [];
+    state.selectedTower = null;
+    
+    // Starting resources for each floor
     if (state.floor === 1) {
-      state.towers = [];
       state.money = 250;
       state.lives = 25;
       state.score = 0;
     } else {
-      // Bonus money for advancing floors
-      state.money += 100 + state.floor * 20;
+      // Bonus money for higher floors, but not too much since towers are cleared
+      state.money = 200 + state.floor * 50;
+      // Restore some lives for higher floors
+      state.lives = Math.min(25, state.lives + 5);
     }
     
     uiSync();
@@ -163,14 +168,23 @@ const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
     
     updateUpgradePanel();
     
-    // Show next floor button if wave 5 is complete
-    const canAdvance = state.wave === 5 && state.spawnQueue.length === 0 && 
-                      state.enemies.length === 0;
-    nextFloorBtn.hidden = !canAdvance;
+    // Check if wave 5 is complete and can advance to next floor
+    const wave5Complete = state.wave === 5 && state.spawnQueue.length === 0 && 
+                         state.enemies.length === 0;
     
-    // Hide start wave button if already at wave 5 and not ready to advance
-    startBtn.hidden = (state.wave >= 5 && !canAdvance);
-    startBtn.disabled = state.spawnQueue.length > 0 || state.wave >= 5;
+    if (wave5Complete) {
+      startBtn.textContent = 'Next Floor';
+      startBtn.disabled = false;
+      nextFloorBtn.hidden = true; // Hide the separate next floor button
+    } else if (state.wave >= 5) {
+      startBtn.textContent = 'Fighting...';
+      startBtn.disabled = true;
+      nextFloorBtn.hidden = true;
+    } else {
+      startBtn.textContent = state.spawnQueue.length > 0 ? 'Spawning...' : 'Start Wave';
+      startBtn.disabled = state.spawnQueue.length > 0;
+      nextFloorBtn.hidden = true;
+    }
   }
 
   function updateUpgradePanel() {
@@ -542,13 +556,17 @@ const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
   function getWaveConfig(wave, floor) {
     const enemies = [];
     const baseCount = 8 + wave * 2;
-    const floorMultiplier = 1 + (floor - 1) * 0.3;
+    
+    // Floor scaling - enemies get much stronger each floor
+    const floorHealthMultiplier = 1 + (floor - 1) * 0.8;  // 80% more HP per floor
+    const floorSpeedMultiplier = 1 + (floor - 1) * 0.3;   // 30% faster per floor
+    const floorRewardMultiplier = 1 + (floor - 1) * 0.5;  // 50% more reward per floor
     
     // Normal enemies
     const normalCount = Math.floor(baseCount * 0.6);
-    const normalHp = Math.floor((30 + wave * 8) * floorMultiplier);
-    const normalSpeed = 60 + Math.min(40, wave * 4);
-    const normalReward = 15 + Math.floor(wave * 0.6);
+    const normalHp = Math.floor((30 + wave * 8) * floorHealthMultiplier);
+    const normalSpeed = Math.floor((60 + Math.min(40, wave * 4)) * floorSpeedMultiplier);
+    const normalReward = Math.floor((15 + Math.floor(wave * 0.6)) * floorRewardMultiplier);
     
     for (let i = 0; i < normalCount; i++) {
       enemies.push({ hp: normalHp, speed: normalSpeed, reward: normalReward, type: 'normal' });
@@ -557,9 +575,9 @@ const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
     // Fast enemies
     if (wave >= 2) {
       const fastCount = Math.floor(baseCount * 0.25);
-      const fastHp = Math.floor((20 + wave * 5) * floorMultiplier);
-      const fastSpeed = 100 + Math.min(60, wave * 6);
-      const fastReward = 12 + Math.floor(wave * 0.4);
+      const fastHp = Math.floor((20 + wave * 5) * floorHealthMultiplier);
+      const fastSpeed = Math.floor((100 + Math.min(60, wave * 6)) * floorSpeedMultiplier);
+      const fastReward = Math.floor((12 + Math.floor(wave * 0.4)) * floorRewardMultiplier);
       
       for (let i = 0; i < fastCount; i++) {
         enemies.push({ hp: fastHp, speed: fastSpeed, reward: fastReward, type: 'fast' });
@@ -569,21 +587,34 @@ const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
     // Tank enemies
     if (wave >= 3) {
       const tankCount = Math.floor(baseCount * 0.15);
-      const tankHp = Math.floor((80 + wave * 20) * floorMultiplier);
-      const tankSpeed = 30 + Math.min(20, wave * 2);
-      const tankReward = 25 + Math.floor(wave * 1.2);
+      const tankHp = Math.floor((80 + wave * 20) * floorHealthMultiplier);
+      const tankSpeed = Math.floor((30 + Math.min(20, wave * 2)) * floorSpeedMultiplier);
+      const tankReward = Math.floor((25 + Math.floor(wave * 1.2)) * floorRewardMultiplier);
       
       for (let i = 0; i < tankCount; i++) {
         enemies.push({ hp: tankHp, speed: tankSpeed, reward: tankReward, type: 'tank' });
       }
     }
     
-    // Boss enemy
+    // Boss enemy (wave 5 only)
     if (wave === 5) {
-      const bossHp = Math.floor((200 + floor * 50) * floorMultiplier);
-      const bossSpeed = 40;
-      const bossReward = 100 + floor * 20;
+      const bossHp = Math.floor((200 + floor * 100) * floorHealthMultiplier);
+      const bossSpeed = Math.floor(40 * floorSpeedMultiplier);
+      const bossReward = Math.floor((100 + floor * 50) * floorRewardMultiplier);
       enemies.push({ hp: bossHp, speed: bossSpeed, reward: bossReward, type: 'boss' });
+      
+      // Add extra enemies for boss wave on higher floors
+      if (floor > 1) {
+        const extraCount = Math.floor(floor * 2);
+        for (let i = 0; i < extraCount; i++) {
+          enemies.push({ 
+            hp: Math.floor(normalHp * 1.2), 
+            speed: normalSpeed, 
+            reward: normalReward, 
+            type: 'normal' 
+          });
+        }
+      }
     }
     
     return enemies;
@@ -692,6 +723,15 @@ const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
   startBtn.addEventListener('click', () => {
     if (state.spawnQueue.length > 0) return;
+    
+    // Check if this should advance to next floor
+    if (state.wave === 5 && state.spawnQueue.length === 0 && state.enemies.length === 0) {
+      // Advance to next floor
+      state.floor++;
+      initializeFloor();
+      return;
+    }
+    
     // Don't allow starting wave beyond 5 on current floor
     if (state.wave >= 5) return;
     scheduleWave(state.wave + 1);
