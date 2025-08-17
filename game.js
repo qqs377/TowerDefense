@@ -55,9 +55,9 @@
 
   // Tower defs
   const TOWER_DEFS = {
-    basic:  { cost: 100, range: 140, fireRate: 0.8, damage: 10, bulletSpeed: 420, color: '#4f7cff' },
-    sniper: { cost: 150, range: 260, fireRate: 1.8, damage: 28, bulletSpeed: 700, color: '#ffd166' },
-    slow:   { cost: 120, range: 120, fireRate: 1.1, damage: 6,  bulletSpeed: 360, color: '#8de86e', slow: 0.55, slowSecs: 1.2 },
+    basic:  { cost: 30, range: 140, fireRate: 0.8, damage: 10, bulletSpeed: 420, color: '#4f7cff' },
+    sniper: { cost: 50, range: 260, fireRate: 1.8, damage: 28, bulletSpeed: 700, color: '#ffd166' },
+    slow:   { cost: 50, range: 120, fireRate: 1.1, damage: 6,  bulletSpeed: 360, color: '#8de86e', slow: 0.55, slowSecs: 1.2 },
   };
 
   function uiSync() {
@@ -234,7 +234,7 @@
     const count = 6 + n * 2;
     const hp = 40 + n * 12;
     const speed = 70 + Math.min(60, n * 6);
-    const reward = 8 + Math.floor(n * 0.8);
+    const reward = 20 + Math.floor(n * 0.8);
     state.spawnQueue = Array.from({length: count}, () => ({ hp, speed, reward }));
     state.spawnTimer = 0.0;
     uiSync();
