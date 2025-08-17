@@ -2,13 +2,73 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Tower Defense Game</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Tower Defense</title>
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <h1>Tower Defense</h1>
-  <canvas id="gameCanvas" width="800" height="600"></canvas>
-  <script src="script.js"></script>
+  <header class="topbar">
+    <h1>Tower Defense</h1>
+    <div class="stats">
+      <div>💰 Money: <span id="money">0</span></div>
+      <div>❤️ Lives: <span id="lives">0</span></div>
+      <div>🌊 Wave: <span id="wave">0</span></div>
+    </div>
+  </header>
+
+  <main class="layout">
+    <section class="board">
+      <canvas id="game" width="900" height="600"></canvas>
+      <div id="tooltip" class="tooltip" hidden></div>
+    </section>
+
+    <aside class="sidebar">
+      <div class="panel">
+        <h2>Build</h2>
+        <div class="tower-buttons">
+          <button class="tower-btn" data-type="basic">
+            Basic Tower<br><small>Cost: 100</small>
+          </button>
+          <button class="tower-btn" data-type="sniper">
+            Sniper Tower<br><small>Cost: 150</small>
+          </button>
+          <button class="tower-btn" data-type="slow">
+            Frost Tower<br><small>Cost: 120</small>
+          </button>
+        </div>
+        <p class="hint">
+          Tip: Click a free tile (not the path) to place the selected tower.
+        </p>
+      </div>
+
+      <div class="panel">
+        <h2>Controls</h2>
+        <div class="controls">
+          <button id="startWave">Start Wave</button>
+          <button id="pauseResume">Pause</button>
+          <button id="sellMode">Sell Mode: Off</button>
+        </div>
+      </div>
+
+      <div class="panel">
+        <h2>Info</h2>
+        <ul class="legend">
+          <li><span class="dot path"></span> Path</li>
+          <li><span class="dot build"></span> Buildable</li>
+          <li><span class="dot tower"></span> Tower</li>
+        </ul>
+        <p>
+          Enemies follow the path. Stop them from reaching the exit!<br />
+          Earn money by defeating enemies and build more towers.
+        </p>
+      </div>
+    </aside>
+  </main>
+
+  <footer class="footer">
+    <span>Made for GitHub Pages • No libraries required</span>
+  </footer>
+
+  <script src="game.js"></script>
 </body>
 </html>
