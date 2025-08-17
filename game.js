@@ -846,7 +846,7 @@ const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
     try {
       const { data, error } = await supabase
-        .from('leaderboard')
+        .from('tower_leaderboard')
         .insert([
           {
             player_name: playerName,
@@ -870,7 +870,7 @@ const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
   async function loadLeaderboard() {
     try {
       const { data, error } = await supabase
-        .from('leaderboard')
+        .from('tower_leaderboard')
         .select('*')
         .order('score', { ascending: false })
         .limit(10);
